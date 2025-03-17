@@ -40,6 +40,7 @@ function sendResetPasswordEmail(email, token) {
 }
 
 export const emailService = {
+  send,
   sendActivationEmail,
   sendResetPasswordEmail,
 };

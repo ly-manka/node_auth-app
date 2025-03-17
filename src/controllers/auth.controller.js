@@ -43,10 +43,10 @@ const activate = async (req, res) => {
   user.activationToken = null;
   user.save();
 
-  res.send({ message: 'OK. Your email is active' });
+  res.send({ message: 'Account activated', redirectUrl: '/profile' });
 };
 
-const generateTokens = async (res, user) => {
+const generateTokens = async (res, user, redirectUrl) => {
   const normalizedUser = userService.normalize(user);
 
   const accessToken = jwtService.sign(normalizedUser);
@@ -62,6 +62,7 @@ const generateTokens = async (res, user) => {
   res.send({
     user: normalizedUser,
     accessToken,
+    redirectUrl,
   });
 };
 
@@ -88,7 +89,7 @@ const login = async (req, res) => {
     throw ApiError.badRequest('Wrong password');
   }
 
-  generateTokens(res, user);
+  generateTokens(res, user, '/profile');
 };
 
 const refresh = async (req, res) => {

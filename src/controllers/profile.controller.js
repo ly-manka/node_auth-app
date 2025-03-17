@@ -4,6 +4,7 @@ import { validateName } from '../utils/validateName.js';
 import bcrypt from 'bcrypt';
 import { validatePassword } from '../utils/validatePassword.js';
 import { validateEmail } from '../utils/validateEmail.js';
+import { emailService } from '../services/email.service.js';
 
 const getUser = async (userId) => {
   const user = await userService.findById(userId);
@@ -64,10 +65,6 @@ const updatePassword = async (req, res) => {
     password: validatePassword(newPassword),
   };
 
-  if (newPassword !== confirmation) {
-    errors.confirmation = 'Passwords do not match';
-  }
-
   if (errors.password || errors.confirmation) {
     throw ApiError.badRequest('Bad request', errors);
   }
@@ -89,7 +86,6 @@ const changeEmail = async (req, res) => {
   const userId = req.user.id;
   const user = await getUser(userId);
   const userPassword = user.password;
-
   const isSame = await bcrypt.compare(password, userPassword);
 
   if (!isSame) {
@@ -107,6 +103,12 @@ const changeEmail = async (req, res) => {
   if (errors.email) {
     throw ApiError.badRequest('Bad request', errors);
   }
+
+  await emailService.send({
+    email: user.email,
+    subject: 'Your email was changed',
+    html: 'If you did not request this change, contact support.',
+  });
 
   await userService.updateEmail(newEmail, userId);
 
